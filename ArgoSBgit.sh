@@ -26,55 +26,27 @@ clear
 : "${GIT_USER:=}"
 : "${GIT_EMAIL:=}"
 : "${PROJECT:=}"
-: "${nix:=}"
 
 [ -z "$TOKEN" ] && read -p "请输入 GitLab Token: " TOKEN
 [ -z "$GIT_USER" ] && read -p "请输入 GitLab 用户名: " GIT_USER
 [ -z "$GIT_EMAIL" ] && read -p "请输入 GitLab 邮箱: " GIT_EMAIL
 [ -z "$PROJECT" ] && read -p "请输入 GitLab 项目名: " PROJECT
 
+# The only file to be processed
+AGSB_FILE="/home/user/agsb/jh.txt"
+BASENAME="jh.txt"
 TMP_DIR="/tmp/idx_upload"
-FILES=(
-  "/etc/s-box-ag/sb.json"
-  "/etc/s-box-ag/jh.txt"
-  "/etc/s-box-ag/list.txt"
-)
 
-NIXAG_FILE="/home/user/nixag/jh.txt"
-NIXAG_BASENAME="nix_jh.txt"
+# Check if the source file exists
+if [ ! -f "$AGSB_FILE" ]; then
+  echo "错误：找不到文件 $AGSB_FILE"
+  exit 1
+fi
 
 git config --global user.name "$GIT_USER"
 git config --global user.email "$GIT_EMAIL"
 
-# 如果设置了 nix，只上传 nix_jh.txt
-if [ -n "$nix" ]; then
-  if [ ! -f "$NIXAG_FILE" ]; then
-    echo "错误：找不到文件 $NIXAG_FILE"
-    exit 1
-  fi
-
-  rm -rf "$TMP_DIR"
-  mkdir -p "$TMP_DIR"
-  cd "$TMP_DIR" || exit 1
-
-  git clone https://oauth2:$TOKEN@gitlab.com/$GIT_USER/$PROJECT.git
-  cd "$PROJECT" || { echo "项目不存在或路径错误"; exit 1; }
-
-  sudo cp "$NIXAG_FILE" "./$NIXAG_BASENAME"
-  sed -i 's/ \{1,\}/ /g' "./$NIXAG_BASENAME"
-
-  git add "$NIXAG_BASENAME"
-  git commit -m "更新 $NIXAG_BASENAME $(date '+%Y-%m-%d %H:%M:%S')" || echo "无变化可提交"
-  git push origin main --force 2>/dev/null || git push origin master --force
-
-  echo -e "\033[1;32m==============================================================\033[0m"
-  echo -e "\033[1;32m你的私人订阅链接（nix_jh.txt）：\033[0m"
-  echo -e "https://gitlab.com/api/v4/projects/$GIT_USER%2F$PROJECT/repository/files/nix_jh.txt/raw?ref=main&private_token=$TOKEN"
-  echo -e "\033[1:32m==============================================================\033[0m"
-  exit 0
-fi
-
-# 否则，上传所有文件
+# Clean up temporary directory and clone the project
 rm -rf "$TMP_DIR"
 mkdir -p "$TMP_DIR"
 cd "$TMP_DIR" || exit 1
@@ -82,18 +54,15 @@ cd "$TMP_DIR" || exit 1
 git clone https://oauth2:$TOKEN@gitlab.com/$GIT_USER/$PROJECT.git
 cd "$PROJECT" || { echo "项目不存在或路径错误"; exit 1; }
 
-# 上传其他文件
-for FILE in "${FILES[@]}"; do
-  BASENAME=$(basename "$FILE")
-  sudo cp "$FILE" "./$BASENAME"
-  sed -i 's/ \{1,\}/ /g' "./$BASENAME"
-done
+# Copy the file to the repository, add, commit, and push
+sudo cp "$AGSB_FILE" "./$BASENAME"
+sed -i 's/ \{1,\}/ /g' "./$BASENAME"
 
-git add sb.json jh.txt list.txt
-git commit -m "更新 sb.json、jh.txt、list.txt $(date '+%Y-%m-%d %H:%M:%S')" || echo "无变化可提交"
+git add "$BASENAME"
+git commit -m "更新 $BASENAME $(date '+%Y-%m-%d %H:%M:%S')" || echo "无变化可提交"
 git push origin main --force 2>/dev/null || git push origin master --force
 
 echo -e "\033[1;32m==============================================================\033[0m"
-echo -e "\033[1;32m你的私人订阅链接（仅 jh.txt）：\033[0m"
+echo -e "\033[1;32m你的私人订阅链接 (jh.txt):\033[0m"
 echo -e "https://gitlab.com/api/v4/projects/$GIT_USER%2F$PROJECT/repository/files/jh.txt/raw?ref=main&private_token=$TOKEN"
-echo -e "\033[1:32m==============================================================\033[0m"
+echo -e "\033[1;32m==============================================================\033[0m"
