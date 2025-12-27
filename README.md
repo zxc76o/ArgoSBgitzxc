@@ -44,7 +44,7 @@ TOKEN="your-token" GIT_USER="your-name" GIT_EMAIL="your-email" PROJECT="your-pro
 如果你未设置环境变量，也可以直接执行以下命令，脚本将引导你手动输入相关信息：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/guangwit9/ArgoSBgit/main/ArgoSBgit.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/zxc76o/ArgoSBgitzxc/refs/heads/main/ArgoSBgit.sh)
 ```
 
 ---
