@@ -33,7 +33,7 @@ clear
 [ -z "$PROJECT" ] && read -p "请输入 GitLab 项目名: " PROJECT
 
 # The only file to be processed
-AGSB_FILE="/root/agsb/jh.txt"
+AGSB_FILE="/root/agsbx/jh.txt"
 BASENAME="jh.txt"
 TMP_DIR="/tmp/idx_upload"
 
